@@ -1,7 +1,5 @@
-
-
 import React, { useState, useEffect, useCallback } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { 
   LayoutDashboard, 
@@ -84,6 +82,7 @@ const navigationItems = [
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState(() => localStorage.getItem("selectedCompanyId") || "all");
@@ -162,6 +161,15 @@ export default function Layout({ children, currentPageName }) {
   }, []); 
 
   useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('user') || 'null');
+    if (!userData) {
+      navigate('/');
+    } else {
+      setUser(userData);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     // Não carrega dados do usuário/empresa na página pública de formulário
     if (currentPageName !== 'ViewForm') {
         loadInitialData();
@@ -176,12 +184,9 @@ export default function Layout({ children, currentPageName }) {
     }
   }
 
-  const handleLogout = async () => {
-    try {
-      await UserEntity.logout();
-    } catch (error) {
-      console.error("Erro ao fazer logout:", error);
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    navigate('/');
   };
 
   const selectedCompanyName = selectedCompanyId === "all" ? "Todas Empresas" : (companies.find(c => c.id === selectedCompanyId)?.name || "Nenhuma empresa");
@@ -189,6 +194,11 @@ export default function Layout({ children, currentPageName }) {
   // Se for a página de formulário público, renderiza apenas o conteúdo
   if (currentPageName === 'ViewForm') {
     return <div className="bg-[#131313] min-h-screen">{children}</div>;
+  }
+
+  // Se não houver usuário, não renderiza o layout
+  if (!user) {
+    return null;
   }
 
   return (

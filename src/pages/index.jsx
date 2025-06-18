@@ -1,56 +1,51 @@
 import Layout from "./Layout.jsx";
-
+import LoginPage from "./LoginPage";
 import Dashboard from "./Dashboard";
-
 import CRM from "./CRM";
-
 import Settings from "./Settings";
-
 import Management from "./Management";
-
 import Drive from "./Drive";
-
 import Activities from "./Activities";
-
 import Playbooks from "./Playbooks";
-
 import Forms from "./Forms";
-
 import Records from "./Records";
-
 import Commissions from "./Commissions";
-
 import ViewForm from "./ViewForm";
-
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const PAGES = {
-    
+    LoginPage: LoginPage,
     Dashboard: Dashboard,
-    
     CRM: CRM,
-    
     Settings: Settings,
-    
     Management: Management,
-    
     Drive: Drive,
-    
     Activities: Activities,
-    
     Playbooks: Playbooks,
-    
     Forms: Forms,
-    
     Records: Records,
-    
     Commissions: Commissions,
-    
     ViewForm: ViewForm,
-    
+}
+
+// Componente de proteção de rota
+function PrivateRoute({ children }) {
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const location = useLocation();
+
+  if (!user) {
+    return <Navigate to="/" state={{ from: location }} replace />;
+  }
+
+  return children;
 }
 
 function _getCurrentPage(url) {
+    if (url === '/' || url === '') {
+        return 'LoginPage';
+    }
+    
     if (url.endsWith('/')) {
         url = url.slice(0, -1);
     }
@@ -60,7 +55,7 @@ function _getCurrentPage(url) {
     }
 
     const pageName = Object.keys(PAGES).find(page => page.toLowerCase() === urlLastPart.toLowerCase());
-    return pageName || Object.keys(PAGES)[0];
+    return pageName || 'LoginPage';
 }
 
 // Create a wrapper component that uses useLocation inside the Router context
@@ -68,35 +63,96 @@ function PagesContent() {
     const location = useLocation();
     const currentPage = _getCurrentPage(location.pathname);
     
+    // Não renderiza o Layout na página de login
+    if (currentPage === 'LoginPage') {
+        return <LoginPage />;
+    }
+    
     return (
         <Layout currentPageName={currentPage}>
             <Routes>            
-                
-                    <Route path="/" element={<Dashboard />} />
-                
-                
-                <Route path="/Dashboard" element={<Dashboard />} />
-                
-                <Route path="/CRM" element={<CRM />} />
-                
-                <Route path="/Settings" element={<Settings />} />
-                
-                <Route path="/Management" element={<Management />} />
-                
-                <Route path="/Drive" element={<Drive />} />
-                
-                <Route path="/Activities" element={<Activities />} />
-                
-                <Route path="/Playbooks" element={<Playbooks />} />
-                
-                <Route path="/Forms" element={<Forms />} />
-                
-                <Route path="/Records" element={<Records />} />
-                
-                <Route path="/Commissions" element={<Commissions />} />
-                
-                <Route path="/ViewForm" element={<ViewForm />} />
-                
+                <Route path="/" element={<LoginPage />} />
+                <Route 
+                    path="/dashboard" 
+                    element={
+                        <PrivateRoute>
+                            <Dashboard />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route 
+                    path="/crm" 
+                    element={
+                        <PrivateRoute>
+                            <CRM />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route 
+                    path="/settings" 
+                    element={
+                        <PrivateRoute>
+                            <Settings />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route 
+                    path="/management" 
+                    element={
+                        <PrivateRoute>
+                            <Management />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route 
+                    path="/drive" 
+                    element={
+                        <PrivateRoute>
+                            <Drive />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route 
+                    path="/activities" 
+                    element={
+                        <PrivateRoute>
+                            <Activities />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route 
+                    path="/playbooks" 
+                    element={
+                        <PrivateRoute>
+                            <Playbooks />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route 
+                    path="/forms" 
+                    element={
+                        <PrivateRoute>
+                            <Forms />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route 
+                    path="/records" 
+                    element={
+                        <PrivateRoute>
+                            <Records />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route 
+                    path="/commissions" 
+                    element={
+                        <PrivateRoute>
+                            <Commissions />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route path="/viewform" element={<ViewForm />} />
             </Routes>
         </Layout>
     );
